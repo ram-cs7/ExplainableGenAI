@@ -1,0 +1,23 @@
+*.jl.cov
+*.jl.*.cov
+*.jl.mem
+info.log
+Manifest.toml
+.vscode/
+.DS_Store
+docs/build/
+docs/site/
+
+# Paper
+iclr_submission/
+neurips_workshop/
+
+# LaTeX build artifacts
+*.aux
+*.bbl
+*.blg
+*.log
+*.out
+*.fls
+*.fdb_latexmk
+*.synctex.gz
