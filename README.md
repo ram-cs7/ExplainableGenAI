@@ -106,3 +106,9 @@ ExplainableGenAI/
 ## 📝 License
 
 This project is licensed under the MIT License.
+
+---
+
+## ⚠️ Research Disclaimer
+
+This codebase is provided as-is, strictly for **academic research purposes** in conjunction with our paper submission. It is an experimental framework meant to demonstrate the integration of Mechanistic Interpretability within the Julia SciML ecosystem. It is **not** intended for production environments. 
