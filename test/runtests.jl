@@ -62,6 +62,6 @@ using Statistics
     # Note on LLMWrapper/HookedTransformer:
     # Integration tests loading real HuggingFace models via Transformers.jl
     # are excluded from the automated CI suite to prevent out-of-memory (OOM) 
-    # errors in constrained build environments. See examples/2026_sota_demo.jl 
+    # errors in constrained build environments. See examples/case_study_1_math.jl 
     # for executable end-to-end paths on supported hardware.
 end

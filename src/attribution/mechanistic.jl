@@ -287,16 +287,14 @@ function esae_loss(esae::EquivariantSparseAutoencoder, x::AbstractMatrix)
     # Base reconstruction and sparsity loss
     base_loss = sae_loss(esae.sae, x)
     
-    # Equivariance constraint: T * W_dec ≈ W_dec * T_dict (simplified to W_dec commuting with T)
-    # We penalize the commutator [T, W_dec] = T*W_dec - W_dec*T
-    # (Assuming T acts on the same dimension space for simplicity in this generic implementation)
-    T = esae.symmetry_group_matrix
+    # Equivariance constraint: penalize the commutator [T, W_dec]
+    # T_cache[1] = I (identity), T_cache[2] = T^1 (the generator)
+    T = esae.T_cache[2]
     W_dec = esae.sae.W_dec
     
-    # If dimensions match, enforce commutation. Otherwise, enforce T*W_dec ≈ W_dec
+    # Enforce commutation: T*W_dec ≈ W_dec*T
     equiv_penalty = 0.0f0
     if size(T, 1) == size(W_dec, 1) && size(T, 2) == size(W_dec, 1)
-        # Assuming D_dict >= D_model, we just project W_dec through T
         transformed = T * W_dec
         equiv_penalty = 0.1f0 * mean((transformed .- W_dec).^2)
     end

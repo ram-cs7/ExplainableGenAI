@@ -73,7 +73,7 @@ trace = AgentTrace("session_rag_2", [n_parser, n_retriever, n_summarizer], :Fail
 
 println("Baseline P(\"2026\"): $(state_final["prob_2026"])")
 
-# 3. Apply DAG Oracle Intervention (Lemma 2: do(v_retriever = z_oracle))
+# 3. Apply DAG Oracle Intervention: do(v_retriever = z_oracle) (Section 3.2)
 println("\n[2] Applying DAG Trace (Oracle Intervention at Retriever)...")
 oracle_state = copy(state_post_retriever)
 oracle_state["oracle_intervention"] = true # Simulates injecting z_oracle

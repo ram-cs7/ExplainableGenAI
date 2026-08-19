@@ -138,7 +138,7 @@ function diagnose_failure(trace::AgentTrace; agent_executor::Union{Function, Not
     attribution_scores = Dict(:Planning => 0.0, :Memory => 0.0, :Tool => 0.0)
     
     if agent_executor !== nothing
-        # True Counterfactual Diagnosis (Lemma 2: O(log D) binary causal search)
+        # True Counterfactual Diagnosis: O(log D) binary causal search (Section 3.2)
         left = 1
         right = length(trace.nodes)
         root_cause_idx = right

@@ -26,7 +26,7 @@ If you encounter bugs, installation issues, or unexpected behavior in the Sparse
 To set up the repository for local development:
 ```julia
 # Clone the repository
-git clone https://github.com/Anonymous/ExplainableGenAI.git
+git clone <REPOSITORY_URL>
 cd ExplainableGenAI
 
 # Start Julia and activate the environment

@@ -71,19 +71,6 @@ This package directly implements the mathematical derivations provided in our ma
 1. **Lemma 1 (Bounded Convergence of the Adjoint):** Found in `src/attribution/mechanistic.jl`. The custom `ChainRulesCore.rrule` for `jumprelu_activation` uses a Gaussian mollifier to approximate the Dirac delta gradient of the Heaviside step function.
 2. **Causal Trace Complexity Analysis:** Found in `src/attribution/agentic.jl`. The `diagnose_failure` routine utilizes a binary search (`O(log D)`) across strict linear chains within the causal graph, isolating root causes exponentially faster than linear scanning.
 
-### Citing This Work
-
-```bibtex
-@software{explainablegenai2026,
-  title={ExplainableGenAI.jl: A Native Julia Framework for Mechanistic Interpretability and Agentic Traceability in Scientific Machine Learning},
-  author={Anonymous Authors},
-  year={2026},
-  url={https://github.com/Anonymous/ExplainableGenAI}
-}
-```
-
----
-
 ## 📁 Project Structure
 
 ```text
