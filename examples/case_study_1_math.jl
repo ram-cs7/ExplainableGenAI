@@ -1,13 +1,23 @@
+# ==============================================================================
+# ILLUSTRATIVE WALKTHROUGH: Math Heuristic Override (Calculator Tool Failure)
+# ==============================================================================
+# This script demonstrates the ExplainableGenAI.jl intervention pipeline using
+# a structured synthetic trace. The executor function below returns fixed outputs
+# to illustrate the DAG and SAE intervention APIs. Values are illustrative;
+# see paper Section 3.2 for the methodology discussion.
+# ==============================================================================
+
 using ExplainableGenAI
 using ExplainableGenAI.AgenticTraceability
 using Printf
 
 println("==================================================")
-println(" Case Study 1: Math Heuristic Override ")
+println(" Illustrative Walkthrough 1: Math Heuristic Override ")
 println("==================================================")
 
-# 1. Setup the deterministic LLM DAG executor
-function math_agent_executor(node::SemanticNode, state::Dict)
+# 1. Synthetic executor with fixed outputs to demonstrate the intervention API
+# NOTE: This does not connect to a real LLM. It returns pre-set values to
+# illustrate how the DAG engine and SAE ablation APIs work together.
     new_state = copy(state)
     
     if node.module_type == :Planning
@@ -53,8 +63,6 @@ println("Final Output Status: $(get(state_final, "error", "Success"))")
 
 # 3. Apply the mechanistic intervention (clamping Feature #402 to 0.0)
 println("\n[2] Applying SAE Intervention: Clamping Feature #402 to 0.0...")
-# In the real framework, this translates to modifying the hidden state tensor injected into the node.
-# Here we simulate this by flipping the semantic flag parsed by our executor.
 oracle_state = copy(state_post_planner)
 oracle_state["override_feature_402_active"] = false 
 

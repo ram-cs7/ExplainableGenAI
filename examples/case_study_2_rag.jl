@@ -1,12 +1,23 @@
+# ==============================================================================
+# ILLUSTRATIVE WALKTHROUGH: Multi-Agent Memory Corruption (RAG Pipeline)
+# ==============================================================================
+# This script demonstrates the ExplainableGenAI.jl intervention pipeline using
+# a structured synthetic trace. The executor functions below return fixed outputs
+# to illustrate the DAG and SAE intervention APIs. Values are illustrative;
+# see paper Section 3.2 for the methodology discussion.
+# ==============================================================================
+
 using ExplainableGenAI
 using ExplainableGenAI.AgenticTraceability
 using Printf
 
 println("==================================================")
-println(" Case Study 2: Multi-Agent Memory Corruption ")
+println(" Illustrative Walkthrough 2: Multi-Agent Memory Corruption ")
 println("==================================================")
 
-# 1. Setup the deterministic LLM DAG executor for RAG
+# 1. Setup the deterministic executor for the RAG pipeline
+# NOTE: This is a synthetic executor with fixed outputs to demonstrate
+# the intervention API. It does not connect to a real LLM.
 function rag_agent_executor(node::SemanticNode, state::Dict)
     new_state = copy(state)
     
@@ -17,8 +28,7 @@ function rag_agent_executor(node::SemanticNode, state::Dict)
         new_state["status"] = "success"
         
     elseif node.module_type == :Memory
-        # Retriever
-        # Simulating Feature #1092 being active (stale memory cache override)
+        # Retriever — simulates Feature #1092 (stale memory cache) being active/ablated
         if get(new_state, "feature_1092_active", true)
             new_state["retrieved_context"] = "Tax brackets for 2023: 10%, 12%, 22%, 24%..."
         else
@@ -35,7 +45,6 @@ function rag_agent_executor(node::SemanticNode, state::Dict)
             new_state["kl_divergence"] = 0.0 # Baseline
         else
             new_state["summary"] = "Based on the retrieved context, the 2026 tax brackets are..."
-            # When the context has 2026, the probability shifts and KL divergence is high relative to baseline
             new_state["prob_2026"] = 0.92
             new_state["kl_divergence"] = 3.85
         end
@@ -53,7 +62,7 @@ function rag_agent_executor(node::SemanticNode, state::Dict)
     return new_state
 end
 
-# 2. Simulate the initial failure (Feature #1092 active)
+# 2. Run the baseline trajectory (Feature #1092 active → failure)
 println("\n[1] Running Baseline Trajectory (Failure State)...")
 initial_state = Dict("query" => "What are the 2026 tax brackets?", "feature_1092_active" => true)
 
@@ -93,4 +102,4 @@ sae_final_state = rag_agent_executor(n_summarizer, sae_post_retriever)
 
 println("SAE Trace P(\"2026\"): $(sae_final_state["prob_2026"]) | KL-Divergence: $(sae_final_state["kl_divergence"])")
 
-println("\nData successfully reproduces Table 1 from the paper.")
+println("\nWalkthrough complete. Values are illustrative; see paper Section 3.2.")

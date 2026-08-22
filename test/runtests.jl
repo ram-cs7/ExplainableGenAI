@@ -3,6 +3,11 @@ using ExplainableGenAI
 using Flux
 using Zygote
 using Statistics
+using LinearAlgebra
+
+# Constrain OpenBLAS to a single thread to prevent out-of-memory (OOM)
+# errors in memory-constrained environments (e.g., paging file limits).
+BLAS.set_num_threads(1)
 
 @testset "ExplainableGenAI.jl 2026 SOTA Core Tests" begin
 
@@ -58,10 +63,40 @@ using Statistics
         @test scores[:Planning] == 1.0
         @test scores[:Memory] == 0.0
     end
+
+    @testset "JumpReLU Adjoint Numerical Correctness" begin
+        # Finite-difference gradient check for the custom JumpReLU rrule (Lemma 1).
+        # This verifies the adjoint is numerically correct, not just non-nil.
+        d_model = 16
+        d_dict = 64
+        sae = JumpReLUSparseAutoencoder(d_model, d_dict; initial_threshold=0.1f0)
+        x = randn(Float32, d_model, 4)
+        
+        # Compute analytic gradient via Zygote (uses our custom rrule)
+        loss_fn(m) = sum(m(x)[1])
+        _, grads = Flux.withgradient(loss_fn, sae)
+        analytic_grad_enc = grads[1][:W_enc]
+        
+        # Compute finite-difference gradient for a subset of W_enc entries
+        eps = 1e-3f0
+        for idx in [(1,1), (5,3), (d_dict, d_model)]
+            i, j = idx
+            sae_plus = deepcopy(sae)
+            sae_plus.W_enc[i, j] += eps
+            loss_plus = loss_fn(sae_plus)
+            
+            sae_minus = deepcopy(sae)
+            sae_minus.W_enc[i, j] -= eps
+            loss_minus = loss_fn(sae_minus)
+            
+            fd_grad = (loss_plus - loss_minus) / (2 * eps)
+            @test isapprox(analytic_grad_enc[i, j], fd_grad; atol=0.1f0)
+        end
+    end
     
-    # Note on LLMWrapper/HookedTransformer:
-    # Integration tests loading real HuggingFace models via Transformers.jl
-    # are excluded from the automated CI suite to prevent out-of-memory (OOM) 
-    # errors in constrained build environments. See examples/case_study_1_math.jl 
-    # for executable end-to-end paths on supported hardware.
+    # Note: Integration tests loading real HuggingFace models via Transformers.jl
+    # are excluded from the automated test suite to prevent out-of-memory (OOM) 
+    # errors in constrained build environments. The examples/ directory contains
+    # illustrative walkthroughs demonstrating the intervention pipeline with
+    # structured synthetic traces.
 end

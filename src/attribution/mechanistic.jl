@@ -75,10 +75,11 @@ Runs a forward pass where the activation at `node_name` is hard-replaced
 by `replacement_act`. Used for causal scrubbing and interventions.
 """
 function patch_activations(ht::HookedTransformer, input, node_name::String, replacement_act)
-    # Genuine activation patching in Flux requires custom forward passes.
-    # We substitute the extracted cached hidden states and compute differences.
-    # Note: To fully execute this natively on HuggingFace architectures, 
-    # we rely on the causal_scrub_head implementation.
+    # Activation patching requires intercepting the forward pass at a specific layer
+    # and substituting the cached activation with `replacement_act`.
+    # Full implementation requires model-specific layer hooks.
+    @warn "patch_activations: Full layer-hook-based patching is not yet implemented. " *
+          "Returning unmodified logits. Use causal_scrub_head or manual intervention instead."
     logits, _ = ht(input)
     return logits
 end
@@ -222,7 +223,7 @@ function train_sae!(sae::SparseAutoencoder, activation_buffer::AbstractMatrix;
             end
             
             # Post-gradient step: normalize decoder weights to unit norm
-            sae.W_dec .= sae.W_dec ./ (sqrt.(sum(sae.W_dec.^2, dims=1)) .+ 1e-8f0)
+            sae.W_dec .= sae.W_dec ./ (sqrt.(sum(sae.W_dec.^2, dims=1)) .+ 1f-8)
         end
         
         n_dead = count(inactive_count .>= dead_threshold)
@@ -364,20 +365,26 @@ Calculates the gradient of the logit diff w.r.t to the attention head's output
 and multiplies it by the activation difference (clean - corrupt).
 """
 function causal_scrub_head(model::HookedTransformer, prompt::String, layer::Int, head::Int)
-    # True causal scrubbing using activation patching
-    # 1. Run forward pass on a corrupted (resampled) prompt and cache the head's activations
+    # Attribution Patching: approximates causal effect of corrupting a specific head.
+    # 1. Run forward pass on a corrupted (resampled) prompt and cache activations
     corrupted_prompt = "Corrupted " * prompt
     _, corrupt_cache = cache_activations(model, corrupted_prompt)
-    corrupted_head_act = corrupt_cache["layer_$(layer)_head_$(head)"]
     
-    # 2. Run forward pass on clean prompt, but patch in the corrupted head's activations
-    clean_logits = patch_activations(model, prompt, "layer_$(layer)_head_$(head)", corrupted_head_act)
+    # Use the whole-layer cache key (which is what cache_activations actually stores)
+    layer_key = "layer_$layer"
+    if !haskey(corrupt_cache, layer_key)
+        @warn "causal_scrub_head: Cache key '$layer_key' not found. Available keys: $(keys(corrupt_cache))"
+        return 0.0
+    end
+    corrupted_layer_act = corrupt_cache[layer_key]
+    
+    # 2. Run forward pass on clean prompt, patching in the corrupted layer activations
+    clean_logits = patch_activations(model, prompt, layer_key, corrupted_layer_act)
     
     # 3. Calculate causal effect (difference in logits)
     original_logits, _ = cache_activations(model, prompt)
     
-    # The scrubbing effect is how much the target prediction drops when this head is corrupted
-    # (Simplified to L2 norm of logit difference for generic implementation)
+    # The scrubbing effect is how much the target prediction drops when this layer is corrupted
     return norm(original_logits .- clean_logits)
 end
 

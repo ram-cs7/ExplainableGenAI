@@ -18,6 +18,7 @@ const k = 32
 
 println("=== Hardware Information ===")
 versioninfo()
+println("BLAS threads: ", BLAS.get_num_threads())
 println("============================\n")
 
 # Initialize models
@@ -38,13 +39,13 @@ x = randn(Float32, d_model, batch_size)
 
 function benchmark_sae(name, model, input)
     println("Benchmarking $name (Forward Pass)...")
-    fw_bench = @benchmark $model($input) samples=10 evals=1
+    fw_bench = @benchmark $model($input) samples=30 evals=1
     fw_times_ms = fw_bench.times ./ 1e6
     fw_time_ms = median(fw_times_ms)
     fw_std_ms = std(fw_times_ms)
     
     println("Benchmarking $name (Backward Pass)...")
-    bw_bench = @benchmark Zygote.gradient(m -> sum(m($input)[1]), $model) samples=10 evals=1
+    bw_bench = @benchmark Zygote.gradient(m -> sum(m($input)[1]), $model) samples=30 evals=1
     bw_times_ms = bw_bench.times ./ 1e6
     bw_time_ms = median(bw_times_ms)
     bw_std_ms = std(bw_times_ms)

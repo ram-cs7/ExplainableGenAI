@@ -2,7 +2,7 @@ module ExplainableGenAI
 
 # Include all submodules first (before using them)
 include("models/llm_wrapper.jl")
-include("models/img_wrapper.jl")
+include("models/img_wrapper.jl")   # Experimental: vision model wrapper (future work, not covered in paper)
 include("attribution/attention.jl")
 include("attribution/gradient.jl")
 include("attribution/perturbation.jl")
@@ -10,7 +10,7 @@ include("attribution/mechanistic.jl")
 include("attribution/agentic.jl")
 include("visualization/plots.jl")
 include("visualization/dashboard.jl")
-include("attribution/autoresearch.jl")
+include("attribution/autoresearch.jl") # Experimental: automated feature discovery (future work, not covered in paper)
 
 # Now import from submodules
 using .LLMWrapper

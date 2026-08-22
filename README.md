@@ -86,13 +86,14 @@ ExplainableGenAI/
 │   │   ├── gradient.jl                  # [Baseline] Integrated Gradients
 │   │   ├── attention.jl                 # [Baseline] Attention Rollout
 │   │   ├── perturbation.jl              # [Baseline] Input feature ablation
-│   │   └── autoresearch.jl              # Automated feature discovery tooling
+│   │   └── autoresearch.jl              # [Experimental] Automated feature discovery (future work)
 │   └── visualization/
 │       ├── plots.jl                     # [Baseline] Visualization utilities
 │       └── dashboard.jl                 # Interactive visualization dashboards
 ├── examples/
-│   ├── case_study_1_math.jl             # Case study 1: Math-related phenomena
-│   └── case_study_2_vision.jl           # Case study 2: Vision-related phenomena
+│   ├── case_study_1_math.jl             # Walkthrough 1: Math heuristic override
+│   ├── case_study_2_rag.jl              # Walkthrough 2: RAG memory corruption
+│   └── case_study_3_sciml.jl            # Case Study 3: PINN + SAE (real experiment)
 ├── test/
 │   └── runtests.jl                      # Unit tests (JumpReLU Adjoints, DAG scaling)
 ├── benchmark_sae.jl                     # Multi-threaded Julia benchmarking script
